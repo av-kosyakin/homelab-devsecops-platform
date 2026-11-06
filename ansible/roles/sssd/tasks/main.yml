@@ -1,0 +1,40 @@
+---
+- name: Убедиться, что резолвер использует DNS AD-контроллера (нужно для поиска серверов SSSD)
+  ansible.builtin.copy:
+    content: |
+      nameserver 10.10.100.1
+      nameserver 127.0.0.11
+      options ndots:0
+    dest: /etc/resolv.conf
+    owner: root
+    group: root
+    mode: '0644'
+    unsafe_writes: true
+  notify: Перезапустить sssd
+
+- name: Установить пакеты SSSD и сопутствующие
+  ansible.builtin.apt:
+    name:
+      - sssd
+      - sssd-tools
+      - sssd-ad
+      - realmd
+      - adcli
+      - krb5-user
+    state: present
+    update_cache: true
+
+- name: Собрать конфиг sssd.conf из шаблона
+  ansible.builtin.template:
+    src: sssd.conf.j2
+    dest: /etc/sssd/sssd.conf
+    owner: root
+    group: root
+    mode: '0600'
+  notify: Перезапустить sssd
+
+- name: Включить и запустить SSSD
+  ansible.builtin.systemd:
+    name: sssd
+    enabled: true
+    state: started

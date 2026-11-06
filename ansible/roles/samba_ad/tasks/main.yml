@@ -1,0 +1,39 @@
+---
+- name: Установить пакеты Samba AD DC
+  ansible.builtin.apt:
+    name:
+      - krb5-config
+      - krb5-user
+      - samba
+      - samba-common-bin
+      - samba-dsdb-modules
+      - samba-vfs-modules
+      - winbind
+    state: present
+    update_cache: true
+
+- name: Убедиться, что домен уже провижининг (проверка, не действие)
+  ansible.builtin.stat:
+    path: /var/lib/samba/private/sam.ldb
+  register: samba_domain_db
+
+- name: Предупредить, если домен ещё не провижининг
+  ansible.builtin.debug:
+    msg: >
+      Домен не найден (/var/lib/samba/private/sam.ldb отсутствует).
+      Эта роль не выполняет provision — сделайте его вручную через
+      samba-tool domain provision перед повторным запуском.
+  when: not samba_domain_db.stat.exists
+
+- name: Снять маску с samba-ad-dc.service (если стоит)
+  ansible.builtin.systemd:
+    name: samba-ad-dc
+    masked: false
+  when: samba_domain_db.stat.exists
+
+- name: Включить и запустить Samba AD DC
+  ansible.builtin.systemd:
+    name: samba-ad-dc
+    enabled: true
+    state: started
+  when: samba_domain_db.stat.exists

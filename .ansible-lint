@@ -1,0 +1,8 @@
+profile: safety
+
+exclude_paths:
+  - .github/
+  - .cache/
+  - .terraform/
+
+skip_list: []

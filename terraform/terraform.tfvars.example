@@ -1,0 +1,2 @@
+# Скопируйте в terraform.tfvars (он в .gitignore и не коммитится) и укажите свой путь.
+lab_data_root = "/absolute/path/to/it-infra-lab/data"

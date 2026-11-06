@@ -1,0 +1,29 @@
+---
+- name: Установить пакеты Docker Engine
+  ansible.builtin.apt:
+    name:
+      - docker.io
+      - python3-docker
+    state: present
+    update_cache: true
+
+- name: Создать директорию /etc/docker
+  ansible.builtin.file:
+    path: /etc/docker
+    state: directory
+    mode: '0755'
+
+- name: Настроить storage-driver=vfs (нужно для Docker-in-Docker без overlay-on-overlay)
+  ansible.builtin.copy:
+    content: |
+      {
+        "storage-driver": "vfs"
+      }
+    dest: /etc/docker/daemon.json
+    mode: '0644'
+
+- name: Включить и запустить Docker Engine
+  ansible.builtin.systemd:
+    name: docker
+    enabled: true
+    state: started

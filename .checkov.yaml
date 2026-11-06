@@ -1,0 +1,7 @@
+directory:
+  - terraform/
+framework:
+  - terraform
+output: cli
+quiet: true
+compact: true

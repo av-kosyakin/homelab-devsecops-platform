@@ -1,0 +1,42 @@
+---
+- name: Настройка стенда it-infra-platform
+  hosts: lab
+  become: false
+  roles:
+    - wireguard
+
+- name: Базовый доступ (sshd, сессии, автосоздание home)
+  hosts: lab
+  become: false
+  roles:
+    - base_access
+
+- name: Настройка Samba AD контроллера домена
+  hosts: domain_controllers
+  become: false
+  roles:
+    - samba_ad
+
+- name: Настройка SSSD-клиента
+  hosts: domain_clients
+  become: false
+  roles:
+    - sssd
+
+- name: Двухфакторная аутентификация по SSH (TOTP)
+  hosts: domain_clients
+  become: false
+  roles:
+    - mfa
+
+- name: Настройка Docker Engine (Docker-in-Docker)
+  hosts: docker_hosts
+  become: false
+  roles:
+    - docker_engine
+
+- name: Развернуть микросервисы
+  hosts: docker_hosts
+  become: false
+  roles:
+    - microservices

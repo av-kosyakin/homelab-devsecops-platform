@@ -1,0 +1,42 @@
+---
+- name: Создать директорию /root/microservices
+  ansible.builtin.file:
+    path: /root/microservices
+    state: directory
+    mode: '0755'
+
+- name: Скопировать код api/
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../microservices/api/"
+    dest: /root/microservices/api/
+    mode: preserve
+
+- name: Скопировать код agent/
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../microservices/agent/"
+    dest: /root/microservices/agent/
+    mode: preserve
+
+- name: Скопировать docker-compose.yml
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../microservices/docker-compose.yml"
+    dest: /root/microservices/docker-compose.yml
+    mode: '0644'
+
+- name: Собрать .env из зашифрованных переменных Vault
+  ansible.builtin.template:
+    src: env.j2
+    dest: /root/microservices/.env
+    mode: '0600'
+
+- name: Скопировать конфигурацию Prometheus
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../microservices/prometheus/"
+    dest: /root/microservices/prometheus/
+    mode: preserve
+
+- name: Скопировать конфигурацию Grafana (provisioning)
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../microservices/grafana/"
+    dest: /root/microservices/grafana/
+    mode: preserve

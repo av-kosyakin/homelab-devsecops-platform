@@ -1,0 +1,24 @@
+---
+- name: Установить openssh-server
+  ansible.builtin.apt:
+    name: openssh-server
+    state: present
+    update_cache: true
+
+- name: Включить и запустить sshd (стирается при каждом рестарте контейнера, держим идемпотентно)
+  ansible.builtin.systemd:
+    name: ssh
+    enabled: true
+    state: started
+
+- name: Убрать /run/nologin, если завис (systemd-user-sessions.service не запускается сам в этом контейнере)
+  ansible.builtin.file:
+    path: /run/nologin
+    state: absent
+
+- name: Автосоздавать домашние папки доменных пользователей при первом входе
+  ansible.builtin.lineinfile:
+    path: /etc/pam.d/common-session
+    line: "session optional pam_mkhomedir.so umask=0022 skel=/etc/skel"
+    insertafter: '^session optional pam_sss\.so'
+    state: present

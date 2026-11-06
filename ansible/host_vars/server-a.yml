@@ -1,0 +1,6 @@
+wg_address: 10.10.100.1/24
+wg_listen_port: 51820
+wg_postup: "iptables -A FORWARD -i wg0 -j ACCEPT; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE"
+wg_postdown: "iptables -D FORWARD -i wg0 -j ACCEPT; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE"
+wg_peer: server-b
+wg_peer_allowed_ips: "10.10.100.2/32, 10.10.2.0/24"

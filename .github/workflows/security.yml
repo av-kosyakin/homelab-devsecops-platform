@@ -1,0 +1,77 @@
+name: Security checks
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+jobs:
+  gitleaks:
+    name: Secret scanning (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Run gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  ansible-lint:
+    name: Ansible lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install ansible-lint
+        run: pip install ansible-lint
+      - name: Run ansible-lint
+        run: ansible-lint ansible/
+
+  checkov:
+    name: IaC scan (Checkov)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Checkov
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: terraform/
+          quiet: true
+          soft_fail: true
+
+  trivy-config:
+    name: IaC misconfig scan (Trivy)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Trivy config scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: config
+          scan-ref: .
+          exit-code: '0'
+
+  trivy-images:
+    name: Container image scan (Trivy)
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [api, agent]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build ${{ matrix.service }} image
+        run: docker build -t local/${{ matrix.service }}:ci microservices/${{ matrix.service }}
+      - name: Scan ${{ matrix.service }} image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: local/${{ matrix.service }}:ci
+          exit-code: '0'
+          severity: CRITICAL,HIGH

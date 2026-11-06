@@ -1,0 +1,51 @@
+workflow:
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+default:
+  tags:
+    - macbook-air
+
+stages:
+  - lint
+  - plan
+
+terraform:validate:
+  stage: lint
+  script:
+    - cd terraform
+    - terraform fmt -check -recursive
+    - terraform init -input=false
+    - terraform validate
+
+ansible:syntax-check:
+  stage: lint
+  script:
+    - cd ansible
+    - echo "$ANSIBLE_VAULT_PASSWORD" > "/tmp/vault_pass_${CI_JOB_ID}"
+    - ansible-playbook site.yml -i inventory.ini --syntax-check --vault-password-file "/tmp/vault_pass_${CI_JOB_ID}"
+  after_script:
+    - rm -f "/tmp/vault_pass_${CI_JOB_ID}"
+
+terraform:plan:
+  stage: plan
+  needs:
+    - terraform:validate
+  script:
+    - cd terraform
+    # ПРИМЕЧАНИЕ: в оригинале здесь copy локального tfstate по абсолютному пути —
+    # задокументированное ограничение, см. ADR 0002. Для публичной копии путь убран;
+    # в реальном пайплайне используется путь до репозитория на self-hosted runner'е.
+    - terraform init -input=false
+    - terraform plan -input=false
+
+ansible:check:
+  stage: plan
+  needs:
+    - ansible:syntax-check
+  script:
+    - cd ansible
+    - echo "$ANSIBLE_VAULT_PASSWORD" > "/tmp/vault_pass_${CI_JOB_ID}"
+    - ansible-playbook site.yml -i inventory.ini --check --vault-password-file "/tmp/vault_pass_${CI_JOB_ID}"
+  after_script:
+    - rm -f "/tmp/vault_pass_${CI_JOB_ID}"

@@ -1,0 +1,18 @@
+[Interface]
+Address = {{ wg_address }}
+{% if wg_listen_port is defined %}
+ListenPort = {{ wg_listen_port }}
+{% endif %}
+PrivateKey = {{ wg_private_key }}
+{% if wg_postup is defined %}
+PostUp = {{ wg_postup }}
+PostDown = {{ wg_postdown }}
+{% endif %}
+
+[Peer]
+PublicKey = {{ hostvars[wg_peer].wg_public_key }}
+AllowedIPs = {{ wg_peer_allowed_ips }}
+{% if wg_endpoint is defined %}
+Endpoint = {{ wg_endpoint }}
+{% endif %}
+PersistentKeepalive = 25

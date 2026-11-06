@@ -1,0 +1,19 @@
+[sssd]
+domains = internal.local
+config_file_version = 2
+services = nss, pam
+
+[domain/internal.local]
+default_shell = /bin/bash
+ad_domain = internal.local
+ad_server = dc.internal.local
+krb5_realm = INTERNAL.LOCAL
+realmd_tags = manages-system joined-with-adcli
+cache_credentials = True
+id_provider = ad
+auth_provider = ad
+access_provider = ad
+ldap_id_mapping = True
+ldap_sasl_authid = {{ inventory_hostname }}$
+use_fully_qualified_names = False
+fallback_homedir = /home/%u@%d

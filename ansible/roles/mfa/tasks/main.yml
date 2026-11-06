@@ -1,0 +1,27 @@
+---
+- name: Установить libpam-google-authenticator
+  ansible.builtin.apt:
+    name: libpam-google-authenticator
+    state: present
+    update_cache: true
+
+- name: Добавить проверку TOTP в PAM-цепочку sshd
+  ansible.builtin.lineinfile:
+    path: /etc/pam.d/sshd
+    line: "auth required pam_google_authenticator.so"
+    insertafter: '^@include common-auth'
+    state: present
+
+- name: Включить keyboard-interactive аутентификацию (нужна для диалога пароль+код)
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^#?KbdInteractiveAuthentication'
+    line: "KbdInteractiveAuthentication yes"
+  notify: Перезапустить sshd
+
+- name: Выключить обычный PasswordAuthentication (вход только через пароль+TOTP)
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^#?PasswordAuthentication'
+    line: "PasswordAuthentication no"
+  notify: Перезапустить sshd

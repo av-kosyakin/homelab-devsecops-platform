@@ -1,0 +1,37 @@
+# --- Terraform ---
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfstate.backup*
+terraform.tfvars
+*.auto.tfvars
+crash.log
+crash.*.log
+
+# --- Ansible ---
+.vault_pass
+*.vault_pass*
+*.retry
+.ansible/
+
+# --- Секреты / окружение ---
+.env
+.env.*
+!*.env.example
+*.pem
+*.key
+*.crt
+id_rsa*
+*.pub
+
+# --- Python / сборка ---
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+
+# --- ОС / редакторы ---
+.DS_Store
+.idea/
+.vscode/
+*.swp

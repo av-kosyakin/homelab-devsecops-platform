@@ -1,0 +1,4 @@
+wg_address: 10.10.100.2/24
+wg_endpoint: "203.0.113.10:51820"  # placeholder — укажите реальный адрес server-a в вашей сети
+wg_peer: server-a
+wg_peer_allowed_ips: "10.10.100.0/24, 10.10.1.0/24"
