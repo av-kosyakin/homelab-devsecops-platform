@@ -1,8 +1,6 @@
-<!-- Замените OWNER/REPO на ваш github.com/<user>/<repo> перед первым push. -->
-
 # Домашний стенд ИТ-инфраструктуры
 
-![Secret scanning](https://github.com/OWNER/REPO/actions/workflows/security.yml/badge.svg)
+![Secret scanning](https://github.com/av-kosyakin/homelab-devsecops-platform/actions/workflows/security.yml/badge.svg)
 
 Полигон для практики DevSecOps-дисциплин на реальном, работающем стенде: два «сервера»
 на Docker, домен Active Directory, VPN-туннель между хостами, микросервисы во вложенном
