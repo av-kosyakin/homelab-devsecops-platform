@@ -17,10 +17,16 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Run gitleaks
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # gitleaks-action по умолчанию сравнивает только коммиты пуша (before^..after) —
+      # на первом пуше свежего репозитория это падает, потому что у первого коммита
+      # нет родителя. Поэтому сканируем всю историю целиком напрямую через CLI.
+      - name: Install gitleaks
+        run: |
+          curl -sSL -o gitleaks.tar.gz \
+            https://github.com/gitleaks/gitleaks/releases/download/v8.24.3/gitleaks_8.24.3_linux_x64.tar.gz
+          tar xzf gitleaks.tar.gz gitleaks
+      - name: Run gitleaks (полная история)
+        run: ./gitleaks detect --source . --redact -v
 
   ansible-lint:
     name: Ansible lint
