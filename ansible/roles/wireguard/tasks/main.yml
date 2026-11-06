@@ -17,34 +17,38 @@
 - name: Проверить, существует ли уже конфиг wg0.conf
   ansible.builtin.stat:
     path: /etc/wireguard/wg0.conf
-  register: wg_conf_stat
+  register: wireguard_conf_stat
 
 - name: Извлечь приватный ключ из существующего wg0.conf
-  ansible.builtin.shell: "grep '^PrivateKey' /etc/wireguard/wg0.conf | awk '{print $3}'"
-  register: wg_existing_privkey
-  when: wg_conf_stat.stat.exists
+  ansible.builtin.shell: "set -o pipefail; grep '^PrivateKey' /etc/wireguard/wg0.conf | awk '{print $3}'"
+  args:
+    executable: /bin/bash
+  register: wireguard_existing_privkey
+  when: wireguard_conf_stat.stat.exists
   changed_when: false
   check_mode: false
 
 - name: Сгенерировать новый приватный ключ (только если конфига ещё нет)
-  ansible.builtin.shell: wg genkey
-  register: wg_new_privkey
-  when: not wg_conf_stat.stat.exists
+  ansible.builtin.command: wg genkey
+  register: wireguard_new_privkey
+  when: not wireguard_conf_stat.stat.exists
   changed_when: true
 
 - name: Определить приватный ключ (существующий или новый)
   ansible.builtin.set_fact:
-    wg_private_key: "{{ wg_existing_privkey.stdout if wg_conf_stat.stat.exists else wg_new_privkey.stdout }}"
+    wireguard_private_key: "{{ wireguard_existing_privkey.stdout if wireguard_conf_stat.stat.exists else wireguard_new_privkey.stdout }}"
 
 - name: Вычислить публичный ключ из приватного
-  ansible.builtin.shell: "echo '{{ wg_private_key }}' | wg pubkey"
-  register: wg_pubkey_result
+  ansible.builtin.shell: "set -o pipefail; echo '{{ wireguard_private_key }}' | wg pubkey"
+  args:
+    executable: /bin/bash
+  register: wireguard_pubkey_result
   changed_when: false
   check_mode: false
 
 - name: Сохранить публичный ключ как факт хоста
   ansible.builtin.set_fact:
-    wg_public_key: "{{ wg_pubkey_result.stdout }}"
+    wireguard_public_key: "{{ wireguard_pubkey_result.stdout }}"
 
 - name: Собрать конфиг wg0.conf из шаблона
   ansible.builtin.template:

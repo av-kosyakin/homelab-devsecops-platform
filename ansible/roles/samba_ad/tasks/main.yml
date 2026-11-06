@@ -15,7 +15,7 @@
 - name: Убедиться, что домен уже провижининг (проверка, не действие)
   ansible.builtin.stat:
     path: /var/lib/samba/private/sam.ldb
-  register: samba_domain_db
+  register: samba_ad_domain_db
 
 - name: Предупредить, если домен ещё не провижининг
   ansible.builtin.debug:
@@ -23,17 +23,17 @@
       Домен не найден (/var/lib/samba/private/sam.ldb отсутствует).
       Эта роль не выполняет provision — сделайте его вручную через
       samba-tool domain provision перед повторным запуском.
-  when: not samba_domain_db.stat.exists
+  when: not samba_ad_domain_db.stat.exists
 
 - name: Снять маску с samba-ad-dc.service (если стоит)
   ansible.builtin.systemd:
     name: samba-ad-dc
     masked: false
-  when: samba_domain_db.stat.exists
+  when: samba_ad_domain_db.stat.exists
 
 - name: Включить и запустить Samba AD DC
   ansible.builtin.systemd:
     name: samba-ad-dc
     enabled: true
     state: started
-  when: samba_domain_db.stat.exists
+  when: samba_ad_domain_db.stat.exists
